@@ -1,0 +1,1 @@
+cxfreeze -c main.py --target-dir velha --packages "PIL" --base "Win32GUI"
