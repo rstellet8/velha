@@ -1,27 +1,32 @@
+"""
+Jogo da velha feito com Python e Tkinter
+"""
 import tkinter as tk
 from functools import partial
 from PIL import ImageTk, Image
 
 
 class App:
+    """ Classe principal do aplicativo"""
     def __init__(self):
         self.launch()
 
     def launch(self):
+        """Inicialização do aplicativo"""
         self.win = tk.Tk()
         self.win.title("Velha")
         self.win.resizable(False, False)
 
-        mainFrame = tk.Frame(self.win, background="black")
-        mainFrame.pack()
+        main_frame = tk.Frame(self.win, background="black")
+        main_frame.pack()
 
         # Colocando as imagens na memória
-        self.imgCross = ImageTk.PhotoImage(Image.open("assets/imgs/cross.png"))
-        self.imgCircle = ImageTk.PhotoImage(Image.open("assets/imgs/circle.png"))
-        self.imgBlank = ImageTk.PhotoImage(Image.open("assets/imgs/blank.png"))
+        self.img_cross = ImageTk.PhotoImage(Image.open("assets/imgs/cross.png"))
+        self.img_circle = ImageTk.PhotoImage(Image.open("assets/imgs/circle.png"))
+        self.img_blank = ImageTk.PhotoImage(Image.open("assets/imgs/blank.png"))
 
         # Inicializando os botões
-        self.butPos = [
+        self.but_pos = [
             (0, 0), (0, 1), (0, 2),
             (1, 0), (1, 1), (1, 2),
             (2, 0), (2, 1), (2, 2),
@@ -33,20 +38,20 @@ class App:
             [None, None, None],
         ]
 
-        for pos in self.butPos:
+        for pos in self.but_pos:
             but = tk.Button(
-                mainFrame,
-                border=1, 
+                main_frame,
+                border=1,
                 command=partial(self.mark, pos),
-                image=self.imgBlank,
+                image=self.img_blank,
                 text=None
                 )
 
             but.grid(
-                row=pos[0], 
-                column=pos[1], 
-                padx=1, 
-                pady=1, 
+                row=pos[0],
+                column=pos[1],
+                padx=1,
+                pady=1,
                 sticky="nsew"
             )
 
@@ -59,115 +64,120 @@ class App:
         self.won = False
 
         # Botão de Reset
-        self.resetButton = tk.Button(
-            mainFrame,
+        self.reset_button = tk.Button(
+            main_frame,
             text="Reset",
             command=self.reset,
         )
-        self.resetButton.grid(row=4, column=1, sticky="nsew")
+        self.reset_button.grid(row=4, column=1, sticky="nsew")
 
-        # Estado
-        self.estado = tk.StringVar(mainFrame, value="")
-        self.winLabel = tk.Label(
-            mainFrame,
+        # Estado(Ainda jogando, X ou O ganhou, empate)
+        self.estado = tk.StringVar(main_frame, value="")
+        self.win_label = tk.Label(
+            main_frame,
             textvariable=self.estado,
             background="black"
         )
-        self.winLabel.grid(row=4, column=2, sticky="nsew")
+        self.win_label.grid(row=4, column=2, sticky="nsew")
 
         # Placar
-        self.placarO = 0
-        self.placarX = 0
-        self.placarVar = tk.StringVar(mainFrame, value=f"X: 0, O: 0")
+        self.placar_o = 0
+        self.placar_x = 0
+        self.placar_var = tk.StringVar(main_frame, value="X: 0, O: 0")
         placar = tk.Label(
-            mainFrame,
-            textvariable=self.placarVar,
+            main_frame,
+            textvariable=self.placar_var,
         )
         placar.grid(row=4, column=0, sticky="nsew")
 
 
-    def passTurn(self):
-        if self.turn == True:
+    def pass_turn(self):
+        """ Gerencia os turnos"""
+        if self.turn:
             self.turn = False
         else:
             self.turn = True
-    
-    def _mountScore(self, O, X):
-        return f"X: {X}, O: {O}"
 
 
     def mark(self, pos):
+        """ Altera a imagem na posição [pos] de acordo com o turno """
         but = self.buttons[pos[0]][pos[1]]
 
+
         if self.turn:
-            but["image"] = self.imgCircle
+            but["image"] = self.img_circle
             but["text"] = True
         else:
-            but["image"] = self.imgCross
+            but["image"] = self.img_cross
             but["text"] = False
 
         but["width"] = 64
         but["height"] = 64
         but["state"] = "disabled"
-        
-        self.passTurn()
+
+        self.pass_turn()
         self.check()
 
 
     def reset(self):
-        for pos in self.butPos:
+        """ Reinicia o jogo, mas mantém o placar"""
+        for pos in self.but_pos:
             but = self.buttons[pos[0]][pos[1]]
-            but["image"] = self.imgBlank
+            but["image"] = self.img_blank
             but["text"] = "blank"
             but["width"] = 64
             but["height"] = 64
 
         self.estado.set("")
-        self.winLabel["background"] = "black"
+        self.win_label["background"] = "black"
         self.won = False
 
-        for pos in self.butPos:
+        for pos in self.but_pos:
             but = self.buttons[pos[0]][pos[1]]
             but["state"] = "normal"
 
 
-    def winEvent(self):
+    def win_event(self):
+        """ Eventos que devem ser executados após qualquer um dos jogadores ganhar"""
         self.won = True
-        self.placarVar.set(self._mountScore(self.placarO, self.placarX))
-        for pos in self.butPos:
+        self.placar_var.set(mount_score(self.placar_o, self.placar_x))
+        for pos in self.but_pos:
             but = self.buttons[pos[0]][pos[1]]
             but["state"] = "disabled"
 
 
-    def winCross(self):
+    def win_cross(self):
+        """ Eventos que devem ser executados caso X ganhe"""
         self.estado.set("X Ganhou")
-        self.winLabel["background"] = "white"
-        self.placarX += 1
+        self.win_label["background"] = "white"
+        self.placar_x += 1
 
-        self.winEvent()
+        self.win_event()
 
 
-    def winCircle(self):
+    def win_circle(self):
+        """ Eventos que devem ser executados caso O ganhe"""
         self.estado.set("O ganhou")
-        self.winLabel["background"] = "white"
-        self.placarO += 1
+        self.win_label["background"] = "white"
+        self.placar_o += 1
 
-        self.winEvent()
-    
+        self.win_event()
+
 
     def check(self):
+        """ Avalia se algum dos jogadores ganhou ou se empatou"""
         # Possíveis linhas ganhadoras
-        linesToWin = [
-            [self.butPos[0], self.butPos[1], self.butPos[2]],
-            [self.butPos[3], self.butPos[4], self.butPos[5]],
-            [self.butPos[6], self.butPos[7], self.butPos[8]],
+        lines_to_win = [
+            [self.but_pos[0], self.but_pos[1], self.but_pos[2]],
+            [self.but_pos[3], self.but_pos[4], self.but_pos[5]],
+            [self.but_pos[6], self.but_pos[7], self.but_pos[8]],
 
-            [self.butPos[0], self.butPos[3], self.butPos[6]],
-            [self.butPos[1], self.butPos[4], self.butPos[7]],
-            [self.butPos[2], self.butPos[5], self.butPos[8]],
+            [self.but_pos[0], self.but_pos[3], self.but_pos[6]],
+            [self.but_pos[1], self.but_pos[4], self.but_pos[7]],
+            [self.but_pos[2], self.but_pos[5], self.but_pos[8]],
 
-            [self.butPos[0], self.butPos[4], self.butPos[8]],
-            [self.butPos[2], self.butPos[4], self.butPos[6]],
+            [self.but_pos[0], self.but_pos[4], self.but_pos[8]],
+            [self.but_pos[2], self.but_pos[4], self.but_pos[6]],
         ]
 
         accept = [
@@ -175,33 +185,44 @@ class App:
             [0, 0, 0]
         ]
 
-        for line in linesToWin:
+        for line in lines_to_win:
             values = []
             for pos in line:
                 but = self.buttons[pos[0]][pos[1]]
                 values.append(but["text"])
-            
+
             if values == accept[0]:
                 print("'O' ganhou")
-                self.winCircle()
+                self.win_circle()
                 break
-            
-            elif values == accept[1]:
+
+            if values == accept[1]:
                 print("'X' ganhou")
-                self.winCross()
+                self.win_cross()
                 break
 
-        self._checkDraw()
+        self.check_draw()
 
-    def _checkDraw(self):
-        buttons = [self.buttons[pos[0]][pos[1]] for pos in self.butPos]
-        if not self.won and all([(but["state"] == "disabled") for but in buttons]) :
+
+    def check_draw(self):
+        """Avalia se há empate"""
+        buttons = [self.buttons[pos[0]][pos[1]] for pos in self.but_pos]
+        if not self.won and all([(but["state"] == "disabled") for but in buttons]):
             self.estado.set("Empate")
-            self.winLabel["background"] = "white"
+            self.win_label["background"] = "white"
             print("Empate")
 
+
+def mount_score(circle_score, cross_score):
+    """ Monta o placar"""
+    return f"X: {cross_score}  O: {circle_score}"
+
+
 def main():
+    """ Lógica de execução do programa"""
     app = App()
     app.win.mainloop()
 
-main()
+
+if __name__ == "__main__":
+    main()
