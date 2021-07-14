@@ -4,8 +4,8 @@ Jogo da velha feito com Python e TKinter
 
 ## Portátil
 
-A pasta 'velha' contém uma versão portátil do aplicativo.
+A pasta [velha](velha/) contém uma versão portátil do aplicativo.
 
 ## Freezing
 
-o arquivo 'compile' cria um aplicativo portátil a partir de 'main.py'
+O arquivo [compile.bat](compile.bat) cria um aplicativo portátil a partir de [main.py](main.py)
